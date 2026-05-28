@@ -71,6 +71,13 @@ type Option struct {
 	SsmCustomCommand string
 }
 
+// viewState holds sort/filter state per resource kind so it can be restored after a reload.
+type viewState struct {
+	sortColumn int    // -1 = no active sort
+	sortOrder  string // "asc" or "desc"
+	filterText string
+}
+
 // tview App
 type App struct {
 	// tview Application
@@ -108,6 +115,8 @@ type App struct {
 	bootstrapServices []types.Service
 	// Set when splash bootstrap fails before Run() returns; read after Run().
 	splashStartupErr error
+	// Persists sort/filter state per kind across page reloads.
+	viewStates map[kind]viewState
 }
 
 func newApp(option Option) (*App, error) {
@@ -155,6 +164,7 @@ func newApp(option Option) (*App, error) {
 			container:      &types.Container{},
 			taskDefinition: &types.TaskDefinition{},
 		},
+		viewStates: make(map[kind]viewState),
 	}, nil
 }
 
